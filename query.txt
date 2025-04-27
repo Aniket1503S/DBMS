@@ -1,0 +1,148 @@
+query
+
+--trigger
+CREATE OR REPLACE TRIGGER secure_emp
+BEFORE INSERT OR UPDATE OR DELETE ON employees
+BEGIN
+  IF (TO_CHAR(SYSDATE, 'DY') IN ('SAT', 'SUN')) 
+     OR (TO_CHAR(SYSDATE, 'HH24') NOT BETWEEN '08' AND '18') THEN
+     
+    IF DELETING THEN
+      RAISE_APPLICATION_ERROR(-20502, 'You may delete from EMPLOYEES table only during business hours.');
+      
+    ELSIF INSERTING THEN
+      RAISE_APPLICATION_ERROR(-20500, 'You may insert into EMPLOYEES table only during business hours.');
+      
+    ELSIF UPDATING('SALARY') THEN
+      RAISE_APPLICATION_ERROR(-20503, 'You may update SALARY only during business hours.');
+      
+    ELSE
+      RAISE_APPLICATION_ERROR(-20504, 'You may update EMPLOYEES table only during normal hours.');
+      
+    END IF;
+    
+  END IF;
+END;
+/
+
+
+-- Creating and inserting into Company table
+CREATE TABLE Company(name VARCHAR(20) PRIMARY KEY, city VARCHAR(20));
+INSERT INTO Company VALUES('Loreal', 'Mumbai');
+INSERT INTO Company VALUES('Infosys', 'Delhi');
+INSERT INTO Company VALUES('Britannia', 'Bangalore');
+INSERT INTO Company VALUES('Cadbury', 'Pune');
+SELECT * FROM Company;
+
+-- Creating and inserting into Product table
+CREATE TABLE Product(p_name VARCHAR(20) PRIMARY KEY, maker VARCHAR(20));
+INSERT INTO Product VALUES('Shampoo', 'Loreal');
+INSERT INTO Product VALUES('Module', 'Infosys');
+INSERT INTO Product VALUES('Cake', 'Britannia');
+INSERT INTO Product VALUES('Chocolate', 'Cadbury');
+SELECT * FROM Product;
+
+-- Creating and inserting into Purchase table
+CREATE TABLE Purchase(id NUMBER(3) PRIMARY KEY, product VARCHAR(20), buyer VARCHAR(20));
+INSERT INTO Purchase VALUES(101, 'Shampoo', 'Yukta');
+INSERT INTO Purchase VALUES(102, 'Module', 'Sumit');
+INSERT INTO Purchase VALUES(103, 'Cake', 'Roshani');
+INSERT INTO Purchase VALUES(104, 'Chocolate', 'Gauri');
+SELECT * FROM Purchase;
+
+-- Working with employees table
+SELECT * FROM tab;
+SELECT * FROM employees;
+SELECT FIRST_NAME FROM employees;
+SELECT EMPLOYEE_ID, FIRST_NAME, JOB_ID, SALARY FROM employees;
+DESCRIBE employees;
+
+-- Salary-based queries
+SELECT * FROM employees WHERE salary > 10000;
+SELECT EMPLOYEE_ID, LAST_NAME, SALARY FROM employees WHERE salary > 10000;
+SELECT EMPLOYEE_ID, LAST_NAME, SALARY FROM employees WHERE salary > 5000;
+SELECT EMPLOYEE_ID, LAST_NAME, SALARY FROM employees WHERE salary BETWEEN 5000 AND 10000;
+SELECT * FROM employees WHERE salary > 10000 OR salary < 20000;
+SELECT * FROM employees WHERE salary = 9000;
+SELECT * FROM employees WHERE salary = 5000;
+
+-- Name-based queries
+SELECT * FROM employees WHERE FIRST_NAME = 'Daniel';
+SELECT FIRST_NAME FROM employees WHERE FIRST_NAME = 'John';
+SELECT * FROM employees WHERE JOB_ID = 'IT_PROG';
+SELECT FIRST_NAME FROM employees WHERE FIRST_NAME LIKE 'J%';
+
+-- Group by and aggregation queries
+SELECT DEPARTMENT_ID, COUNT(*) FROM employees GROUP BY DEPARTMENT_ID HAVING COUNT(*) > 3;
+SELECT MAX(SALARY), DEPARTMENT_ID FROM employees GROUP BY DEPARTMENT_ID;
+SELECT MAX(SALARY), DEPARTMENT_ID FROM employees GROUP BY DEPARTMENT_ID HAVING MAX(SALARY) > 10000;
+SELECT AVG(SALARY), DEPARTMENT_ID FROM employees GROUP BY DEPARTMENT_ID;
+
+-- More queries on employees
+SELECT * FROM employees WHERE HIRE_DATE = '03-JAN-90';
+SELECT * FROM employees WHERE HIRE_DATE BETWEEN '17-JUN-87' AND '21-MAY-91';
+SELECT * FROM employees WHERE HIRE_DATE > '17-JUN-87' AND HIRE_DATE < '21-MAY-91';
+SELECT COUNT(*) AS NO_OF_RECORDS FROM employees;
+SELECT COUNT(*) FROM employees WHERE FIRST_NAME LIKE 'J%';
+SELECT COUNT(*) FROM employees WHERE DEPARTMENT_ID = 90;
+SELECT COUNT(*) FROM employees WHERE salary > 5000;
+SELECT MIN(SALARY) FROM employees;
+SELECT MAX(SALARY) FROM employees;
+SELECT AVG(SALARY) FROM employees;
+
+-- Working with CLASS4 table
+CREATE TABLE CLASS4(
+    ROLL_NUMBER NUMBER(10) PRIMARY KEY,
+    NAME VARCHAR(10),
+    GENDER CHAR(10),
+    BATCH CHAR(10)
+);
+DESCRIBE CLASS4;
+INSERT INTO CLASS4 VALUES(6, 'ARAV', 'MALE', 'C');
+SELECT * FROM CLASS4;
+INSERT INTO CLASS4(ROLL_NUMBER, NAME, GENDER, BATCH) VALUES(2, 'PRANAV', 'MALE', 'A');
+DELETE FROM CLASS4 WHERE ROLL_NUMBER = 3;
+UPDATE CLASS4 SET ROLL_NUMBER = 3 WHERE NAME = 'ARAV';
+
+-- Altering CLASS4 table
+ALTER TABLE CLASS4 ADD(DOB DATE);
+UPDATE CLASS4 SET DOB = '27-MAY-98' WHERE NAME = 'PRANAV';
+ALTER TABLE CLASS4 DROP(BATCH);
+
+
+db.createCollection("MOVIES")
+
+db.MOVIES.insertMany([{Title:"Ghostbusters",release_year:1984,genre:["Comedy","Fantasy"
+,"Adventure","Horror"],Rating:7.8,director:"Ivan Reitman",actors:["Bill Murray","Dan
+Aykroyd","SigourneyWeaver"]},{Title:"Zombieland",release_year:2009,genre:["Comedy","Hor
+ror","Adventure"],Rating:7.6,director:"Ruben Fleischer",actors:["Jesse Eisenberg","Emma
+Stone","WoodyHarrelson"]},{Title:"ArmyofDarkness",release_year:1992,genre:["Comedy","H
+orror","Fantasy","Adventure"],Rating:7.4,director:"Sam Raimi",actors:["Bruce
+Campbell","EmbethDavidtz"]},{Title:"TuckerandDalevs.Evil",release_year:2010,genre:["Come
+dy","Horror"],Rating:7.5,director:"EliCraig",actors:["Tyler Labine","Alan Tudyk","Katrina
+Bowden"]},{Title:"TheCabinintheWoods",release_year:2012,genre:["Horror","Comedy","Fant
+asy"],Rating:7.0,director:"DrewGoddard",actors:["KristenConnolly","ChrisHemsworth","Anna
+Hutchison"]}])
+
+db.MOVIES.find()
+
+db.MOVIES.find({ release_year: { $gt: 2000 } })
+
+db.MOVIES.find({ Rating: { $gt: 7.5 } })
+
+db.MOVIES.deleteMany({ Rating: { $lt: 7.1 } })
+
+db.MOVIES.updateOne({Title: "Tucker and Dale vs. Evil"}, {$set: { Rating: 9 } })
+db.MOVIES.findOne({Title: "Tucker and Dale vs. Evil"})
+
+i)Average Rating ($group) –
+
+db.MOVIES.aggregate([ { $group: { _id: null, avgRating: { $av$avg: "$Rating" }}}])
+
+ii) Top 3 rated movies ($sort + $limit) –
+
+db.MOVIES.aggregate([ { $sort: { Rating: -1 } }, { $limit: 3 }, { $project: { _id: 0, Title: 1, Rating:1 } } ])
+
+iii) Display only title and rating ($project) -
+
+db.MOVIES.aggregate([ { $project: { _id: 0, Title: 1, Rating: 1 } } ])

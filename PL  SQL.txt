@@ -1,0 +1,301 @@
+PL / SQL
+
+1. Print Hello PL/SQL
+plsql
+
+SET SERVEROUTPUT ON;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Hello PL/SQL');
+END;
+/
+
+2. Anonymous Block with NULL
+plsql
+
+BEGIN
+  NULL;
+END;
+/
+
+3. Declare and Print Variables
+pl
+
+DECLARE
+  v_hiredate DATE := TO_DATE('01-JAN-2001', 'DD-MON-YYYY');
+  v_deptno NUMBER(2) NOT NULL := 10;
+  v_location VARCHAR2(13) := 'Atlanta';
+  c_comm CONSTANT NUMBER := 1400;
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Hiredate: ' || v_hiredate);
+  DBMS_OUTPUT.PUT_LINE('Department No: ' || v_deptno);
+  DBMS_OUTPUT.PUT_LINE('Location: ' || v_location);
+  DBMS_OUTPUT.PUT_LINE('Commission: ' || c_comm);
+END;
+/
+
+4. Use of %TYPE in Variable Declaration
+plsql
+
+DECLARE
+  v_name employees.last_name%TYPE;
+  v_balance NUMBER(7,2);
+  v_min_balance v_balance%TYPE := 10;
+BEGIN
+  v_balance := 2500.50;
+  v_name := 'Brown';
+  DBMS_OUTPUT.PUT_LINE('Name: ' || v_name);
+  DBMS_OUTPUT.PUT_LINE('Balance: ' || v_balance);
+  DBMS_OUTPUT.PUT_LINE('Minimum Balance: ' || v_min_balance);
+END;
+/
+
+5. Insert Data into Table (needs EMPLOYEES table)
+plsql
+
+INSERT INTO employees (employee_id, last_name, job_id, salary)
+VALUES (999, 'Smith', 'SA_REP', 5000);
+
+6. Update Employee Salary
+plsql
+
+UPDATE employees
+SET salary = salary * 1.10
+WHERE job_id = 'ST_CLERK';
+
+7. Delete Employees of Department 10
+pl
+
+DELETE FROM employees
+WHERE department_id = 10;
+
+8. IF THEN ELSE Example
+plsql
+
+DECLARE
+  v_salary NUMBER := 5000;
+BEGIN
+  IF v_salary > 3000 THEN
+    DBMS_OUTPUT.PUT_LINE('Salary is greater than 3000');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('Salary is less than or equal to 3000');
+  END IF;
+END;
+/
+
+9. CASE Expression Example
+plsql
+
+DECLARE
+  grade CHAR(1) := 'B';
+BEGIN
+  CASE grade
+    WHEN 'A' THEN DBMS_OUTPUT.PUT_LINE('Excellent');
+    WHEN 'B' THEN DBMS_OUTPUT.PUT_LINE('Very Good');
+    WHEN 'C' THEN DBMS_OUTPUT.PUT_LINE('Good');
+    ELSE DBMS_OUTPUT.PUT_LINE('Needs Improvement');
+  END CASE;
+END;
+/
+
+10. Basic LOOP Example
+plsql
+
+DECLARE
+  v_counter NUMBER := 1;
+BEGIN
+  LOOP
+    DBMS_OUTPUT.PUT_LINE('Counter: ' || v_counter);
+    v_counter := v_counter + 1;
+    EXIT WHEN v_counter > 5;
+  END LOOP;
+END;
+/
+
+11. WHILE LOOP Example
+plsql
+
+DECLARE
+  v_counter NUMBER := 1;
+BEGIN
+  WHILE v_counter <= 5 LOOP
+    DBMS_OUTPUT.PUT_LINE('Counter (While): ' || v_counter);
+    v_counter := v_counter + 1;
+  END LOOP;
+END;
+/
+
+12. FOR LOOP Example
+plsql
+
+BEGIN
+  FOR v_counter IN 1..5 LOOP
+    DBMS_OUTPUT.PUT_LINE('Counter (For): ' || v_counter);
+  END LOOP;
+END;
+/
+
+13. Record Type Example
+plsql
+
+DECLARE
+  TYPE emp_record IS RECORD (
+    emp_name VARCHAR2(30),
+    job_title VARCHAR2(30),
+    salary NUMBER(8,2)
+  );
+  emp emp_record;
+BEGIN
+  emp.emp_name := 'John Doe';
+  emp.job_title := 'Analyst';
+  emp.salary := 4000;
+  DBMS_OUTPUT.PUT_LINE('Name: ' || emp.emp_name || ' Job: ' || emp.job_title || ' Salary: ' || emp.salary);
+END;
+/
+
+14. Cursor Example (Explicit Cursor)
+plsql
+
+DECLARE
+  CURSOR emp_cur IS
+    SELECT employee_id, last_name FROM employees;
+  v_emp_id employees.employee_id%TYPE;
+  v_last_name employees.last_name%TYPE;
+BEGIN
+  OPEN emp_cur;
+  LOOP
+    FETCH emp_cur INTO v_emp_id, v_last_name;
+    EXIT WHEN emp_cur%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('Employee ID: ' || v_emp_id || ' Name: ' || v_last_name);
+  END LOOP;
+  CLOSE emp_cur;
+END;
+/
+
+15. Cursor FOR Loop Example
+plsql
+
+BEGIN
+  FOR rec IN (SELECT employee_id, last_name FROM employees) LOOP
+    DBMS_OUTPUT.PUT_LINE('Employee ID: ' || rec.employee_id || ' Name: ' || rec.last_name);
+  END LOOP;
+END;
+/
+
+16. Exception Handling Example
+plsql
+
+DECLARE
+  v_num1 NUMBER := 10;
+  v_num2 NUMBER := 0;
+  v_result NUMBER;
+BEGIN
+  v_result := v_num1 / v_num2;
+  DBMS_OUTPUT.PUT_LINE('Result: ' || v_result);
+EXCEPTION
+  WHEN ZERO_DIVIDE THEN
+    DBMS_OUTPUT.PUT_LINE('Cannot divide by zero!');
+END;
+/
+
+17. User-Defined Exception Example
+plsql
+
+DECLARE
+  e_salary_low EXCEPTION;
+  v_salary NUMBER := 1000;
+BEGIN
+  IF v_salary < 2000 THEN
+    RAISE e_salary_low;
+  END IF;
+  DBMS_OUTPUT.PUT_LINE('Salary is acceptable');
+EXCEPTION
+  WHEN e_salary_low THEN
+    DBMS_OUTPUT.PUT_LINE('Salary too low');
+END;
+/
+
+18. Procedure to Query Employee Details
+plsql
+
+CREATE OR REPLACE PROCEDURE query_emp (
+  p_id IN employees.employee_id%TYPE,
+  p_name OUT employees.last_name%TYPE,
+  p_salary OUT employees.salary%TYPE,
+  p_comm OUT employees.commission_pct%TYPE
+)
+IS
+BEGIN
+  SELECT last_name, salary, commission_pct
+  INTO p_name, p_salary, p_comm
+  FROM employees
+  WHERE employee_id = p_id;
+END;
+/
+
+19. Calling the Procedure
+plsql
+
+DECLARE
+  gname employees.last_name%TYPE;
+  gsalary employees.salary%TYPE;
+  gcomm employees.commission_pct%TYPE;
+BEGIN
+  query_emp(145, gname, gsalary, gcomm);
+  DBMS_OUTPUT.PUT_LINE('Name: ' || gname || ' Salary: ' || gsalary || ' Commission: ' || NVL(gcomm, 0));
+END;
+/
+
+20. Function to Check Even or Odd
+plsql
+
+CREATE OR REPLACE FUNCTION check_even_odd(p_num NUMBER)
+RETURN VARCHAR2
+IS
+BEGIN
+  IF MOD(p_num, 2) = 0 THEN
+    RETURN 'EVEN';
+  ELSE
+    RETURN 'ODD';
+  END IF;
+END;
+/
+
+21. Calling the Function
+plsql
+
+DECLARE
+  v_result VARCHAR2(10);
+BEGIN
+  v_result := check_even_odd(8);
+  DBMS_OUTPUT.PUT_LINE('Number is ' || v_result);
+END;
+/
+22. Trigger on PRODUCT Table
+(⚡ Assuming you have already created a PRODUCT table!)
+
+plsql
+
+CREATE OR REPLACE TRIGGER secure_product
+BEFORE INSERT OR UPDATE OR DELETE ON product
+BEGIN
+  IF (TO_CHAR(SYSDATE, 'DY') IN ('SAT', 'SUN')) 
+     OR (TO_CHAR(SYSDATE, 'HH24') NOT BETWEEN '08' AND '18') THEN
+  
+    IF DELETING THEN
+      RAISE_APPLICATION_ERROR(-20502, 'You may delete from PRODUCT table only during business hours.');
+      
+    ELSIF INSERTING THEN
+      RAISE_APPLICATION_ERROR(-20500, 'You may insert into PRODUCT table only during business hours.');
+      
+    ELSIF UPDATING('P_NAME') THEN
+      RAISE_APPLICATION_ERROR(-20503, 'You may update P_NAME only during business hours.');
+      
+    ELSE
+      RAISE_APPLICATION_ERROR(-20504, 'You may update PRODUCT table only during normal hours.');
+      
+    END IF;
+    
+  END IF;
+END;
+/
